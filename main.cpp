@@ -31,6 +31,7 @@ typedef K::FT FT;
 typedef K::Point_3 Point;
 typedef K::Segment_3 Segment;
 typedef CGAL::Polyhedron_3<K> Polyhedron;
+typedef CGAL::Aff_transformation_3<K> Affine;
 typedef CGAL::AABB_face_graph_triangle_primitive<Polyhedron> Primitive;
 typedef CGAL::AABB_traits<K, Primitive> Traits;
 typedef CGAL::AABB_tree<Traits> Tree;
@@ -232,8 +233,16 @@ public:
     }
 
     /***************************************************************************/
-    Vector finalize() const
+    Vector finalize()
     {
+        Matrix H=rpy2dcm(g.pos.subVector(3,5));
+        Affine affine(H(0,0),H(0,1),H(0,2),g.pos[0],
+                      H(1,0),H(1,1),H(1,2),g.pos[1],
+                      H(2,0),H(2,1),H(2,2),g.pos[2]);
+                               
+        std::transform(model.points_begin(),model.points_end(),
+                       model.points_begin(),affine);
+
         return g.pos;
     }
 };
@@ -243,6 +252,7 @@ public:
 class PSOModule: public RFModule
 {
     Swarm swarm;
+    string outputFileName;
     double t0;
     
     /***************************************************************************/
@@ -304,6 +314,8 @@ public:
         string modelFileName=rf.find("modelFile").asString().c_str();
         string measurementsFileName=rf.find("measurementsFile").
                                     asString().c_str();
+        outputFileName=rf.check("outputFile",Value("output.off")).
+                       asString().c_str();
 
         Parameters &parameters=swarm.get_parameters();
         parameters.numParticles=rf.check("P",Value(20)).asInt();
@@ -369,8 +381,14 @@ public:
     {
         double dt=Time::now()-t0;
         Vector g=swarm.finalize();
+        
         cout<<"solution: "<<g.toString(3,3).c_str()<<endl;
         cout<<"found in "<<dt<<" [s]"<<endl;
+        
+        ofstream fout(outputFileName.c_str());
+        fout<<swarm.get_model();
+        fout.close();
+        
         return true;
     }
 };
