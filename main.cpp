@@ -133,7 +133,7 @@ class Swarm
     }
     
     /***************************************************************************/
-    void print(const bool randomize_print)
+    void print(const bool randomize_print) const
     {
         cout<<"iter #"<<iter<<": "
             <<"cost="<<g.cost<<" ("<<parameters.cost<<") ";
@@ -232,8 +232,9 @@ public:
     }
 
     /***************************************************************************/
-    void finalize()
+    Vector finalize() const
     {
+        return g.pos;
     }
 };
 
@@ -364,7 +365,8 @@ public:
     /***************************************************************************/
     bool close()
     {
-        swarm.finalize();
+        Vector g=swarm.finalize();
+        cout<<g.toString(3,3).c_str()<<endl;
         return true;
     }
 };
