@@ -83,7 +83,7 @@ class Swarm
     deque<Particle> x,p;
     Particle        g;
     
-    double cost;
+    Vector rand_min,rand_max;
     int iter;
     
     /***************************************************************************/
@@ -122,11 +122,11 @@ class Swarm
         for (size_t i=0; i<measurements.size(); i++)
         {
             Point &m=measurements[i];
-            double x=H(0,0)*m.x+H(0,1)*m.y+H(0,2)*m.z+H(0,3);
-            double y=H(1,0)*m.x+H(1,1)*m.y+H(1,2)*m.z+H(1,3);
-            double z=H(2,0)*m.x+H(2,1)*m.y+H(2,2)*m.z+H(2,3);
-            Point p(x,y,z);
-            particle.cost+=sqrt(tree.squared_distance(p));
+            double x=H(0,0)*m[0]+H(0,1)*m[1]+H(0,2)*m[2]+H(0,3);
+            double y=H(1,0)*m[0]+H(1,1)*m[1]+H(1,2)*m[2]+H(1,3);
+            double z=H(2,0)*m[0]+H(2,1)*m[1]+H(2,2)*m[2]+H(2,3);
+            Point query(x,y,z);
+            particle.cost+=sqrt(tree.squared_distance(query));
         }
         
         return particle.cost;
@@ -136,7 +136,7 @@ class Swarm
     void print()
     {
         cout<<"iter #"<<iter<<": "
-            <<"cost="<<cost<<" ("<<parameters.cost<<")"
+            <<"cost="<<g.cost<<" ("<<parameters.cost<<")"
             <<endl;
     }
     
@@ -145,6 +145,13 @@ public:
     deque<Point> &get_measurements() { return measurements; }
     Polyhedron &get_model()          { return model; }
     Parameters &get_parameters()     { return parameters; }
+    
+    /***************************************************************************/
+    Swarm()
+    {
+        rand_min.resize(6,0.0);
+        rand_max.resize(6,1.0);
+    }
     
     /***************************************************************************/
     void init()
@@ -165,7 +172,6 @@ public:
                 g=p[i];
         
         iter=0;
-        cost=numeric_limits<double>::infinity();
     }
     
     /***************************************************************************/
@@ -174,13 +180,36 @@ public:
         iter++;
         for (size_t i=0; i<x.size(); i++)
         {
+            Vector r1=Rand::vector(rand_min,rand_max);
+            Vector r2=Rand::vector(rand_min,rand_max);
             
-            x[i].vel=omega*x[i].vel+phi_p*(p[i].pos-x[i].pos)+
-                                    phi_g*(g.pos-x[i].pos);
+            x[i].vel=parameters.omega*x[i].vel+
+                     parameters.phi_p*r1*(p[i].pos-x[i].pos)+
+                     parameters.phi_g*r2*(g.pos-x[i].pos);
+            
+            x[i].pos+=x[i].vel;
+            x[i].pos[0]=std::min(std::max(x[i].pos[0],parameters.x_lim[0]),
+                                 parameters.x_lim[1]);
+            x[i].pos[1]=std::min(std::max(x[i].pos[1],parameters.y_lim[0]),
+                                 parameters.y_lim[1]);
+            x[i].pos[2]=std::min(std::max(x[i].pos[2],parameters.z_lim[0]),
+                                 parameters.z_lim[1]);
+            x[i].pos[3]=std::min(std::max(x[i].pos[3],-M_PI),M_PI);
+            x[i].pos[4]=std::min(std::max(x[i].pos[4],-M_PI/2.0),M_PI/2.0);
+            x[i].pos[5]=std::min(std::max(x[i].pos[5],-M_PI),M_PI);
+            
+            double f=evaluate(x[i]);
+            if (f<p[i].cost)
+            {
+                p[i]=x[i];
+                p[i].cost=f;
+                if (f<g.cost)
+                    g=p[i];
+            }
         }
         
         bool term=(iter>=parameters.maxIter) ||
-                  (cost<=parameters.cost);
+                  (g.cost<=parameters.cost);
         
         print();
         return term;
