@@ -112,11 +112,20 @@ class PSOModule: public RFModule
     /***************************************************************************/
     void readMeasurements(ifstream &fin)
     {
+        bool readHeader=true;
         char line[255];
         while (!fin.eof())
         {
             fin.getline(line,sizeof(line),'\n');
             Bottle b(line);
+            
+            if (readHeader)
+            {
+                if (b.get(0).asString()=="end_header")
+                    readHeader=false;
+                continue;
+            }
+                
             if (b.size()>=3)
                 swarm.get_measurements().push_back(Point(b.get(0).asDouble(),
                                                    b.get(1).asDouble(),
@@ -199,7 +208,7 @@ public:
         }
         readMeasurements(measurementsFile);
         measurementsFile.close();
-
+        
         Rand::init();
         swarm.init();
     
