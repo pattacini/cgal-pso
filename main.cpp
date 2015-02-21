@@ -162,7 +162,7 @@ public:
         // data structure to accelerate distance queries
         tree.insert(faces(model).first,faces(model).second,model);
         tree.accelerate_distance_queries();
-
+        
         // create particles and init them randomly
         x.assign(parameters.numParticles,Particle());
         randomize();
@@ -211,7 +211,7 @@ public:
         }
         
         bool randomize_print=false;
-        if ((iter%10)==0)
+        if ((iter%100)==0)
         {
             double mean=0.0;
             for (size_t i=0; i<x.size(); i++)
@@ -243,6 +243,7 @@ public:
 class PSOModule: public RFModule
 {
     Swarm swarm;
+    double t0;
     
     /***************************************************************************/
     void readMeasurements(ifstream &fin)
@@ -347,6 +348,7 @@ public:
         Rand::init();
         swarm.init();
     
+        t0=Time::now();
         return true;
     }
     
@@ -365,8 +367,10 @@ public:
     /***************************************************************************/
     bool close()
     {
+        double dt=Time::now()-t0;
         Vector g=swarm.finalize();
-        cout<<g.toString(3,3).c_str()<<endl;
+        cout<<"solution: "<<g.toString(3,3).c_str()<<endl;
+        cout<<"found in "<<dt<<" [s]"<<endl;
         return true;
     }
 };
