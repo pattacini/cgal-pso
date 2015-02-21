@@ -100,9 +100,9 @@ class Swarm
             particle.pos[4]=Rand::scalar(-M_PI/2.0,M_PI/2.0);
             particle.pos[5]=Rand::scalar(-M_PI,M_PI);
             
-            particle.vel[0]=Rand::scalar(-0.01,0.01);
-            particle.vel[1]=Rand::scalar(-0.01,0.01);
-            particle.vel[2]=Rand::scalar(-0.01,0.01);
+            particle.vel[0]=Rand::scalar(-0.001,0.001);
+            particle.vel[1]=Rand::scalar(-0.001,0.001);
+            particle.vel[2]=Rand::scalar(-0.001,0.001);
             particle.vel[3]=Rand::scalar(-1.0,1.0)*CTRL_DEG2RAD;
             particle.vel[4]=Rand::scalar(-1.0,1.0)*CTRL_DEG2RAD;
             particle.vel[5]=Rand::scalar(-1.0,1.0)*CTRL_DEG2RAD;
