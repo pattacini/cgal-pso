@@ -112,7 +112,7 @@ class Swarm
     /***************************************************************************/
     double evaluate(Particle &particle)
     {
-        Matrix H=rpy2dcm(particle.pos.subVector(3,6));
+        Matrix H=rpy2dcm(particle.pos.subVector(3,5));
         H(0,3)=particle.pos[0];
         H(1,3)=particle.pos[1];
         H(2,3)=particle.pos[2];
@@ -133,11 +133,13 @@ class Swarm
     }
     
     /***************************************************************************/
-    void print()
+    void print(const bool randomize_print)
     {
         cout<<"iter #"<<iter<<": "
-            <<"cost="<<g.cost<<" ("<<parameters.cost<<")"
-            <<endl;
+            <<"cost="<<g.cost<<" ("<<parameters.cost<<") ";
+        if (randomize_print)
+            cout<<"particles scattered away";
+        cout<<endl;
     }
     
 public:
@@ -208,10 +210,24 @@ public:
             }
         }
         
+        bool randomize_print=false;
+        if ((iter%10)==0)
+        {
+            double mean=0.0;
+            for (size_t i=0; i<x.size(); i++)
+                mean+=norm(g.pos-x[i].pos);
+            mean/=x.size();
+            if (mean<0.01)
+            {
+                randomize();
+                randomize_print=true;
+            }
+        }
+        
         bool term=(iter>=parameters.maxIter) ||
                   (g.cost<=parameters.cost);
         
-        print();
+        print(randomize_print);
         return term;
     }
 
