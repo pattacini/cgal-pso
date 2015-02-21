@@ -129,6 +129,7 @@ class Swarm
             Point query(x,y,z);
             particle.cost+=sqrt(tree.squared_distance(query));
         }
+        particle.cost/=measurements.size();
         
         return particle.cost;
     }
