@@ -65,8 +65,10 @@ struct Particle
 {
     Vector pos;
     Vector vel;
+    double cost;
     
-    Particle() : pos(6,0.0), vel(6,0.0) { }
+    Particle() : pos(6,0.0), vel(6,0.0),
+                 cost(numeric_limits<double>::infinity()) { }
 };
 
 
@@ -81,7 +83,6 @@ class Swarm
     deque<Particle> x,p;
     Particle        g;
     
-    double inf;
     double cost;
     int iter;
     
@@ -109,6 +110,29 @@ class Swarm
     }
     
     /***************************************************************************/
+    double evaluate(Particle &particle)
+    {
+        Matrix H=rpy2dcm(particle.pos.subVector(3,6));
+        H(0,3)=particle.pos[0];
+        H(1,3)=particle.pos[1];
+        H(2,3)=particle.pos[2];
+        H=SE3inv(H);
+        
+        particle.cost=0.0;
+        for (size_t i=0; i<measurements.size(); i++)
+        {
+            Point &m=measurements[i];
+            double x=H(0,0)*m.x+H(0,1)*m.y+H(0,2)*m.z+H(0,3);
+            double y=H(1,0)*m.x+H(1,1)*m.y+H(1,2)*m.z+H(1,3);
+            double z=H(2,0)*m.x+H(2,1)*m.y+H(2,2)*m.z+H(2,3);
+            Point p(x,y,z);
+            particle.cost+=sqrt(tree.squared_distance(p));
+        }
+        
+        return particle.cost;
+    }
+    
+    /***************************************************************************/
     void print()
     {
         cout<<"iter #"<<iter<<": "
@@ -118,7 +142,6 @@ class Swarm
     
 public:
     /***************************************************************************/
-    Swarm() : inf(numeric_limits<double>::infinity()) { }
     deque<Point> &get_measurements() { return measurements; }
     Polyhedron &get_model()          { return model; }
     Parameters &get_parameters()     { return parameters; }
@@ -134,16 +157,27 @@ public:
         // create particles and init them randomly
         x.assign(parameters.numParticles,Particle());
         randomize();
-        
         p=x;
+        
+        // evaluate the best particle g before starting
+        for (size_t i=0; i<x.size(); i++)
+            if (evaluate(p[i])<g.cost)
+                g=p[i];
+        
         iter=0;
-        cost=inf;
+        cost=numeric_limits<double>::infinity();
     }
     
     /***************************************************************************/
     bool step()
     {
         iter++;
+        for (size_t i=0; i<x.size(); i++)
+        {
+            
+            x[i].vel=omega*x[i].vel+phi_p*(p[i].pos-x[i].pos)+
+                                    phi_g*(g.pos-x[i].pos);
+        }
         
         bool term=(iter>=parameters.maxIter) ||
                   (cost<=parameters.cost);
