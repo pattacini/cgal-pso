@@ -76,13 +76,49 @@ class Swarm
     deque<Point>    measurements;
     Polyhedron      model;
     Tree            tree;
+    
     Parameters      parameters;
     deque<Particle> x,p;
+    Particle        g;
     
+    double inf;
+    double cost;
     int iter;
+    
+    /***************************************************************************/
+    void randomize()
+    {
+        for (size_t i=0; i<x.size(); i++)
+        {
+            Particle &particle=x[i];
+            
+            particle.pos[0]=Rand::scalar(parameters.x_lim[0],parameters.x_lim[1]);
+            particle.pos[1]=Rand::scalar(parameters.y_lim[0],parameters.y_lim[1]);
+            particle.pos[2]=Rand::scalar(parameters.z_lim[0],parameters.z_lim[1]);
+            particle.pos[3]=Rand::scalar(-M_PI,M_PI);
+            particle.pos[4]=Rand::scalar(-M_PI/2.0,M_PI/2.0);
+            particle.pos[5]=Rand::scalar(-M_PI,M_PI);
+            
+            particle.vel[0]=Rand::scalar(-0.01,0.01);
+            particle.vel[1]=Rand::scalar(-0.01,0.01);
+            particle.vel[2]=Rand::scalar(-0.01,0.01);
+            particle.vel[3]=Rand::scalar(-1.0,1.0)*CTRL_DEG2RAD;
+            particle.vel[4]=Rand::scalar(-1.0,1.0)*CTRL_DEG2RAD;
+            particle.vel[5]=Rand::scalar(-1.0,1.0)*CTRL_DEG2RAD;
+        }
+    }
+    
+    /***************************************************************************/
+    void print()
+    {
+        cout<<"iter #"<<iter<<": "
+            <<"cost="<<cost<<" ("<<parameters.cost<<")"
+            <<endl;
+    }
     
 public:
     /***************************************************************************/
+    Swarm() : inf(numeric_limits<double>::infinity()) { }
     deque<Point> &get_measurements() { return measurements; }
     Polyhedron &get_model()          { return model; }
     Parameters &get_parameters()     { return parameters; }
@@ -97,9 +133,28 @@ public:
 
         // create particles and init them randomly
         x.assign(parameters.numParticles,Particle());
-
+        randomize();
+        
         p=x;
         iter=0;
+        cost=inf;
+    }
+    
+    /***************************************************************************/
+    bool step()
+    {
+        iter++;
+        
+        bool term=(iter>=parameters.maxIter) ||
+                  (cost<=parameters.cost);
+        
+        print();
+        return term;
+    }
+
+    /***************************************************************************/
+    void finalize()
+    {
     }
 };
 
@@ -214,22 +269,23 @@ public:
     
         return true;
     }
-
-    /***************************************************************************/
-    bool close()
-    {
-        return true;
-    }
-
+    
     /***************************************************************************/
     double getPeriod()
     {
-        return 0.1;
+        return 0.0;
     }
 
     /***************************************************************************/
     bool updateModule()
     {
+        return !swarm.step();
+    }
+    
+    /***************************************************************************/
+    bool close()
+    {
+        swarm.finalize();
         return true;
     }
 };
