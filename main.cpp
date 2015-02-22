@@ -294,12 +294,12 @@ class PSOModule: public RFModule
                                                        b.get(2).asDouble()));
                     
                     if (--nPoints<=0)
-                        state++;
+                        return true;
                 }
             }
         }
         
-        return (state>=3);
+        return false;
     }
     
     /***************************************************************************/
