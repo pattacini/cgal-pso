@@ -257,27 +257,49 @@ class PSOModule: public RFModule
     double t0;
     
     /***************************************************************************/
-    void readMeasurements(ifstream &fin)
+    bool readMeasurements(ifstream &fin)
     {
-        bool readHeader=true;
+        int state=0;
+        int nPoints;
         char line[255];
+        
         while (!fin.eof())
         {
             fin.getline(line,sizeof(line),'\n');
             Bottle b(line);
+            Value firstItem=b.get(0);
+            bool isNumber=firstItem.isInt() || firstItem.isDouble();
             
-            if (readHeader)
+            if (state==0)
             {
-                if (b.get(0).asString()=="end_header")
-                    readHeader=false;
-                continue;
+                string tmp=firstItem.asString().c_str();
+                std::transform(tmp.begin(),tmp.end(),tmp.begin(),::toupper);
+                if (tmp=="OFF")
+                    state++;
             }
-                
-            if (b.size()>=3)
-                swarm.get_measurements().push_back(Point(b.get(0).asDouble(),
-                                                   b.get(1).asDouble(),
-                                                   b.get(2).asDouble()));
+            else if (state==1)
+            {
+                if (isNumber)
+                {
+                    nPoints=firstItem.asInt();
+                    state++;
+                }
+            }
+            else if (state==2)
+            {
+                if (isNumber && (b.size()>=3))
+                {
+                    swarm.get_measurements().push_back(Point(b.get(0).asDouble(),
+                                                       b.get(1).asDouble(),
+                                                       b.get(2).asDouble()));
+                    
+                    if (--nPoints<=0)
+                        state++;
+                }
+            }
         }
+        
+        return (state>=3);
     }
     
     /***************************************************************************/
@@ -355,7 +377,13 @@ public:
             modelFile.close();
             return false;
         }
-        readMeasurements(measurementsFile);
+        if (!readMeasurements(measurementsFile))
+        {
+            yError()<<"problem reading measurements file!";
+            modelFile.close();
+            measurementsFile.close();
+            return false;
+        }
         measurementsFile.close();
         
         Rand::init();
