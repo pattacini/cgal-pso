@@ -83,10 +83,11 @@ double Swarm::evaluate(Particle &particle)
         double x=H(0,0)*m[0]+H(0,1)*m[1]+H(0,2)*m[2]+H(0,3);
         double y=H(1,0)*m[0]+H(1,1)*m[1]+H(1,2)*m[2]+H(1,3);
         double z=H(2,0)*m[0]+H(2,1)*m[1]+H(2,2)*m[2]+H(2,3);
-        Point query(x,y,z);
-        particle.cost+=sqrt(tree.squared_distance(query));
+        particle.cost+=sqrt(tree.squared_distance(Point(x,y,z)));
     }
-    particle.cost/=measurements.size();
+    
+    if (measurements.size()>0)
+        particle.cost/=measurements.size();
     
     return particle.cost;
 }
@@ -99,7 +100,7 @@ void Swarm::print(const bool randomize_print)
     {
         ParametersPSO &params=get_parameters();
         cout<<"iter #"<<iter<<": "
-            <<"cost="<<g.cost<<" ("<<params.cost<<") ";
+            <<"cost="<<g.cost<<" ("<<params.cost<<"); ";
         if (randomize_print)
             cout<<"particles scattered away";
         cout<<endl;
@@ -169,16 +170,18 @@ bool Swarm::step()
         double mean=0.0;
         for (size_t i=0; i<x.size(); i++)
             mean+=norm(g.pos-x[i].pos);
-        mean/=x.size();
-        if (mean<0.01)
+        
+        if (x.size()>0)
+            mean/=x.size();
+        
+        if (mean<0.005)
         {
             randomize();
             randomize_print=true;
         }
     }
     
-    bool term=(iter>=params.maxIter) ||
-              (g.cost<=params.cost);
+    bool term=(iter>=params.maxIter) || (g.cost<=params.cost);
     
     print(randomize_print);
     return term;
