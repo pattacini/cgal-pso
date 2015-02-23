@@ -95,12 +95,15 @@ double Swarm::evaluate(Particle &particle)
 /*******************************************************************************/
 void Swarm::print(const bool randomize_print)
 {
-    ParametersPSO &params=get_parameters();
-    cout<<"iter #"<<iter<<": "
-        <<"cost="<<g.cost<<" ("<<params.cost<<") ";
-    if (randomize_print)
-        cout<<"particles scattered away";
-    cout<<endl;
+    if ((iter%10==0) || randomize_print)
+    {
+        ParametersPSO &params=get_parameters();
+        cout<<"iter #"<<iter<<": "
+            <<"cost="<<g.cost<<" ("<<params.cost<<") ";
+        if (randomize_print)
+            cout<<"particles scattered away";
+        cout<<endl;
+    }
 }
 
 

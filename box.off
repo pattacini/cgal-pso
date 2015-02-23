@@ -4,14 +4,14 @@ OFF
 
 # vertices
 # x y z
-0.0 0.0 0.0
-2.0 0.0 0.0
-2.0 1.0 0.0
-0.0 1.0 0.0
-0.0 0.0 1.0
-2.0 0.0 1.0
-2.0 1.0 1.0
-0.0 1.0 1.0
+0.0   0.0   0.0
+0.20  0.0   0.0
+0.20  0.12  0.0
+0.0   0.12  0.0
+0.0   0.0   0.07
+0.20  0.0   0.07
+0.20  0.12  0.07
+0.0   0.12  0.07
 
 # facets must be provided counting vertices such 
 # that normals exit from the polyhedron
