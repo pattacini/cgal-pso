@@ -13,9 +13,9 @@
 #include <yarp/math/Math.h>
 #include <yarp/math/Rand.h>
 
-#include <iCub/ctrl/math.h>
-
 #include "pso.h"
+
+#define DEG2RAD     (M_PI/180.0)
 
 typedef CGAL::Aff_transformation_3<K> Affine;
 
@@ -23,7 +23,6 @@ using namespace std;
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::math;
-using namespace iCub::ctrl;
 
 
 /*******************************************************************************/
@@ -60,9 +59,9 @@ void Swarm::randomize()
         particle.vel[0]=Rand::scalar(-0.001,0.001);
         particle.vel[1]=Rand::scalar(-0.001,0.001);
         particle.vel[2]=Rand::scalar(-0.001,0.001);
-        particle.vel[3]=Rand::scalar(-1.0,1.0)*CTRL_DEG2RAD;
-        particle.vel[4]=Rand::scalar(-1.0,1.0)*CTRL_DEG2RAD;
-        particle.vel[5]=Rand::scalar(-1.0,1.0)*CTRL_DEG2RAD;
+        particle.vel[3]=Rand::scalar(-1.0,1.0)*DEG2RAD;
+        particle.vel[4]=Rand::scalar(-1.0,1.0)*DEG2RAD;
+        particle.vel[5]=Rand::scalar(-1.0,1.0)*DEG2RAD;
     }
 }
 
@@ -96,15 +95,12 @@ double Swarm::evaluate(Particle &particle)
 /*******************************************************************************/
 void Swarm::print(const bool randomize_print)
 {
-    if ((iter%10==0) || randomize_print)
-    {
-        ParametersPSO &params=get_parameters();
-        cout<<"iter #"<<iter<<": "
-            <<"cost="<<g.cost<<" ("<<params.cost<<"); ";
-        if (randomize_print)
-            cout<<"particles scattered away";
-        cout<<endl;
-    }
+    ParametersPSO &params=get_parameters();
+    cout<<"iter #"<<iter<<": "
+        <<"cost="<<g.cost<<" ("<<params.cost<<"); ";
+    if (randomize_print)
+        cout<<"particles scattered away";
+    cout<<endl;
 }
 
 
@@ -183,7 +179,9 @@ bool Swarm::step()
     
     bool term=(iter>=params.maxIter) || (g.cost<=params.cost);
     
-    print(randomize_print);
+    if ((iter%10)==0)
+        print(randomize_print);
+    
     return term;
 }
 
@@ -191,6 +189,8 @@ bool Swarm::step()
 /*******************************************************************************/
 Vector Swarm::finalize()
 {
+    print(false);
+    
     Matrix H=rpy2dcm(g.pos.subVector(3,5));
     Affine affine(H(0,0),H(0,1),H(0,2),g.pos[0],
                   H(1,0),H(1,1),H(1,2),g.pos[1],
