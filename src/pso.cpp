@@ -189,7 +189,7 @@ bool Swarm::step()
 /*******************************************************************************/
 Vector Swarm::finalize()
 {
-    print(false);
+    print();
     
     Matrix H=rpy2dcm(g.pos.subVector(3,5));
     Affine affine(H(0,0),H(0,1),H(0,2),g.pos[0],

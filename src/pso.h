@@ -46,7 +46,7 @@ class Swarm : public Optimizer
     
     void randomize();
     double evaluate(Particle &particle);
-    void print(const bool randomize_print);
+    void print(const bool randomize_print=false);
     
 public:
     Swarm();
