@@ -27,8 +27,8 @@ class OptModule: public RFModule
 {
     Swarm swarm;
     string outputFileName;
-    double t0;
-    
+    double maxT,t0;
+
     /***************************************************************************/
     bool readMeasurements(ifstream &fin)
     {
@@ -119,10 +119,12 @@ public:
         parameters.omega=rf.check("omega",Value(0.8)).asDouble();
         parameters.phi_p=rf.check("phi_p",Value(0.1)).asDouble();
         parameters.phi_g=rf.check("phi_g",Value(0.1)).asDouble();
-        parameters.cost=rf.check("cost",Value(0.001)).asDouble();
+        parameters.cost=rf.check("cost",Value(0.001)).asDouble();        
         readLimits(rf,"x_lim",parameters.x_lim);
         readLimits(rf,"y_lim",parameters.y_lim);
         readLimits(rf,"z_lim",parameters.z_lim);
+
+        maxT=rf.check("T",Value(10.0)).asDouble();
     
         // read the polyhedron from a .OFF file
         ifstream modelFile(modelFileName.c_str());
@@ -174,8 +176,8 @@ public:
 
     /***************************************************************************/
     bool updateModule()
-    {
-        return !swarm.step();
+    {        
+        return (!swarm.step() && (Time::now()-t0<maxT));
     }
     
     /***************************************************************************/
