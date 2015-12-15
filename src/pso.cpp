@@ -97,7 +97,7 @@ void Swarm::print(const bool randomize_print)
 {
     ParametersPSO &params=get_parameters();
     cout<<"iter #"<<iter<<" t="<<setprecision(3)<<fixed<<t<<" [s]: "
-        <<"cost="<<g.cost<<" ("<<params.cost<<"); ";
+        <<"cost="<<setprecision(6)<<g.cost<<" ("<<params.cost<<"); ";
     if (randomize_print)
         cout<<"particles scattered away";
     cout<<endl;
