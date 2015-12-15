@@ -3,8 +3,7 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 cmake_minimum_required(VERSION 2.8)
-set(PROJECTNAME cgal-pso)
-project(${PROJECTNAME})
+project(cgal-pso)
 
 set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS true)
 
@@ -29,7 +28,11 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 include(${CGAL_USE_FILE})
 include(CGAL_CreateSingleSourceCGALProgram)
 
-add_executable(${PROJECTNAME} ${headers} ${sources})
-target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES})
-install(TARGETS ${PROJECTNAME} DESTINATION bin)
+if(MSVC)
+  add_definitions(-D_USE_MATH_DEFINES)
+endif()
+
+add_executable(${PROJECT_NAME} ${headers} ${sources})
+target_link_libraries(${PROJECT_NAME} ${YARP_LIBRARIES})
+install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 icubcontrib_add_uninstall_target()

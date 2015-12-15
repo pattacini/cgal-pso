@@ -96,7 +96,7 @@ double Swarm::evaluate(Particle &particle)
 void Swarm::print(const bool randomize_print)
 {
     ParametersPSO &params=get_parameters();
-    cout<<"iter #"<<iter<<": "
+    cout<<"iter #"<<iter<<" t="<<setprecision(3)<<fixed<<t<<" [s]: "
         <<"cost="<<g.cost<<" ("<<params.cost<<"); ";
     if (randomize_print)
         cout<<"particles scattered away";
@@ -121,6 +121,8 @@ void Swarm::init()
             g=p[i];
     
     iter=0;
+    t0=Time::now();
+    t=0.0;
 }
 
 
@@ -177,7 +179,8 @@ bool Swarm::step()
         }
     }
     
-    bool term=(iter>=params.maxIter) || (g.cost<=params.cost);
+    t=Time::now()-t0;
+    bool term=(iter>=params.maxIter) || (g.cost<=params.cost) || (t>=params.maxT);
     
     if ((iter%10)==0)
         print(randomize_print);
@@ -201,4 +204,4 @@ Vector Swarm::finalize()
 
     return g.pos;
 }
-    
+

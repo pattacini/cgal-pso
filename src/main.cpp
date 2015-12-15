@@ -27,7 +27,7 @@ class OptModule: public RFModule
 {
     Swarm swarm;
     string outputFileName;
-    double t0,T;
+    double t0;
 
     /***************************************************************************/
     bool readMeasurements(ifstream &fin)
@@ -114,8 +114,7 @@ public:
                        asString().c_str();
 
         ParametersPSO &parameters=swarm.get_parameters();
-        parameters.numParticles=rf.check("P",Value(20)).asInt();
-        parameters.maxIter=rf.check("N",Value(100)).asInt();
+        parameters.numParticles=rf.check("P",Value(20)).asInt();        
         parameters.omega=rf.check("omega",Value(0.8)).asDouble();
         parameters.phi_p=rf.check("phi_p",Value(0.1)).asDouble();
         parameters.phi_g=rf.check("phi_g",Value(0.1)).asDouble();
@@ -124,8 +123,12 @@ public:
         readLimits(rf,"y_lim",parameters.y_lim);
         readLimits(rf,"z_lim",parameters.z_lim);
 
-        T=rf.check("T",Value(10.0)).asDouble();
-    
+        if (rf.check("N"))
+            parameters.maxIter=rf.check("N").asInt();
+   
+        if (rf.check("T"))
+            parameters.maxT=rf.check("T").asDouble();
+
         // read the polyhedron from a .OFF file
         ifstream modelFile(modelFileName.c_str());
         if (!modelFile.is_open())
@@ -163,7 +166,7 @@ public:
         
         Rand::init();
         swarm.init();
-    
+
         t0=Time::now();
         return true;
     }
@@ -177,7 +180,7 @@ public:
     /***************************************************************************/
     bool updateModule()
     {        
-        return (!swarm.step() && (Time::now()-t0<T));
+        return !swarm.step();
     }
     
     /***************************************************************************/

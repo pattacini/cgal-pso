@@ -16,10 +16,20 @@ struct ParametersPSO : public Parameters
 {
     int    numParticles;
     int    maxIter;
+    double maxT;
     double omega;
     double phi_p;
     double phi_g;
     double cost;
+
+    ParametersPSO() : Parameters(),
+                      numParticles(20),
+                      maxIter(std::numeric_limits<int>::infinity()),
+                      maxT(std::numeric_limits<double>::infinity()),
+                      omega(0.8),
+                      phi_p(0.1),
+                      phi_g(0.1),
+                      cost(0.0) { }
 };
 
 
@@ -28,7 +38,7 @@ struct Particle
 {
     yarp::sig::Vector pos;
     yarp::sig::Vector vel;
-    double cost;
+    double cost;    
     
     Particle() : pos(6,0.0), vel(6,0.0),
                  cost(std::numeric_limits<double>::infinity()) { }
@@ -43,6 +53,7 @@ class Swarm : public Optimizer
     
     yarp::sig::Vector rand_min,rand_max;
     int iter;
+    double t,t0;
     
     void randomize();
     double evaluate(Particle &particle);
