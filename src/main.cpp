@@ -90,7 +90,7 @@ class OptModule: public RFModule
         
         return false;
     }
-    
+
 public:
     /***************************************************************************/
     bool configure(ResourceFinder &rf)
@@ -100,13 +100,13 @@ public:
             yError()<<"model file not provided!";
             return false;
         }
-    
+
         if (!rf.check("measurementsFile"))
         {
             yError()<<"measurements file not provided!";
             return false;
         }
-        
+
         string modelFileName=rf.find("modelFile").asString().c_str();
         string measurementsFileName=rf.find("measurementsFile").
                                     asString().c_str();
@@ -114,20 +114,20 @@ public:
                        asString().c_str();
 
         ParametersPSO &parameters=swarm.get_parameters();
-        parameters.numParticles=rf.check("P",Value(20)).asInt();        
+        parameters.numParticles=rf.check("P",Value(20)).asInt();
         parameters.omega=rf.check("omega",Value(0.8)).asDouble();
         parameters.phi_p=rf.check("phi_p",Value(0.1)).asDouble();
         parameters.phi_g=rf.check("phi_g",Value(0.1)).asDouble();
-        parameters.cost=rf.check("cost",Value(0.001)).asDouble();        
+        parameters.cost=rf.check("cost",Value(0.001)).asDouble();
         readLimits(rf,"x_lim",parameters.x_lim);
         readLimits(rf,"y_lim",parameters.y_lim);
         readLimits(rf,"z_lim",parameters.z_lim);
 
         if (rf.check("N"))
-            parameters.maxIter=rf.check("N").asInt();
-   
+            parameters.maxIter=rf.find("N").asInt();
+
         if (rf.check("T"))
-            parameters.maxT=rf.check("T").asDouble();
+            parameters.maxT=rf.find("T").asDouble();
 
         // read the polyhedron from a .OFF file
         ifstream modelFile(modelFileName.c_str());
@@ -136,9 +136,9 @@ public:
             yError()<<"problem opening model file!";
             return false;
         }
-        
+
         modelFile>>swarm.get_model();
-        
+
         if (modelFile.bad())
         {
             yError()<<"problem reading model file!";
@@ -146,7 +146,7 @@ public:
             return false;
         }
         modelFile.close();
-        
+
         // read the measurements file
         ifstream measurementsFile(measurementsFileName.c_str());
         if (!measurementsFile.is_open())
