@@ -24,7 +24,7 @@ struct ParametersPSO : public Parameters
 
     ParametersPSO() : Parameters(),
                       numParticles(20),
-                      maxIter(std::numeric_limits<int>::infinity()),
+                      maxIter(std::numeric_limits<int>::max()),
                       maxT(std::numeric_limits<double>::infinity()),
                       omega(0.8),
                       phi_p(0.1),
